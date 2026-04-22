@@ -55,13 +55,13 @@
                         </div>
 
                         <div class="flex gap-2 bg-blue-50 p-2 rounded-xl">
-                            <div class="flex-1">
-                                <label class="text-[9px] font-bold text-blue-700 px-2 uppercase">Yogures</label>
-                                <input type="number" id="qty-yogur" value="0" class="w-full bg-transparent px-2 font-bold text-blue-900 outline-none">
+                            <div class="flex-1 text-center">
+                                <label class="text-[9px] font-bold text-blue-700 uppercase">Yogures</label>
+                                <input type="number" id="qty-yogur" value="0" class="w-full bg-transparent text-center font-bold text-blue-900 outline-none">
                             </div>
-                            <div class="flex-1 border-l border-blue-200">
-                                <label class="text-[9px] font-bold text-blue-700 px-2 uppercase">Granolas</label>
-                                <input type="number" id="qty-granola" value="0" class="w-full bg-transparent px-2 font-bold text-blue-900 outline-none">
+                            <div class="flex-1 border-l border-blue-200 text-center">
+                                <label class="text-[9px] font-bold text-blue-700 uppercase">Granolas</label>
+                                <input type="number" id="qty-granola" value="0" class="w-full bg-transparent text-center font-bold text-blue-900 outline-none">
                             </div>
                         </div>
 
@@ -73,14 +73,14 @@
                     </button>
                     
                     <div class="flex gap-2">
-                        <button onclick="setSearchAsOrigin()" class="flex-1 bg-slate-100 text-slate-500 py-2 rounded-lg text-[10px] font-bold uppercase">Inicio</button>
-                        <button onclick="optimizeRoute()" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[10px] font-bold uppercase shadow-md">Optimizar</button>
+                        <button onclick="setSearchAsOrigin()" class="flex-1 bg-slate-100 text-slate-500 py-2 rounded-lg text-[10px] font-bold uppercase">Setear Inicio</button>
+                        <button onclick="optimizeRoute()" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[10px] font-bold uppercase shadow-md">Optimizar Recorrido</button>
                     </div>
                 </div>
 
                 <div id="summary-panel" class="hidden bg-slate-900 text-white p-5 rounded-3xl animate-fade-in">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-sm uppercase tracking-widest">Resumen de Carga</h3>
+                        <h3 class="font-bold text-sm uppercase tracking-widest text-blue-400">Stock para Cargar</h3>
                         <button onclick="toggleSummary()" class="text-slate-400">✕</button>
                     </div>
                     <div class="grid grid-cols-2 gap-4 text-center">
@@ -97,16 +97,21 @@
 
                 <div id="map" class="shadow-md border-4 border-white"></div>
 
+                <button onclick="openInGoogleMaps()" id="gps-button" class="hidden w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl flex items-center justify-center gap-3 animate-fade-in">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2 6.3-6.4 2.1 2-6.3z"/></svg>
+                    INICIAR NAVEGACIÓN GPS
+                </button>
+
                 <div class="space-y-3">
                     <div class="flex justify-between items-center px-2">
-                        <h2 class="font-bold text-slate-800 text-sm uppercase tracking-tighter">Entregas Pendientes (<span id="count-pending">0</span>)</h2>
-                        <button onclick="clearEverything()" class="text-[10px] text-red-500 font-bold uppercase">Reiniciar Día</button>
+                        <h2 class="font-bold text-slate-800 text-sm uppercase tracking-tighter">Próximas Entregas (<span id="count-pending">0</span>)</h2>
+                        <button onclick="clearEverything()" class="text-[10px] text-red-500 font-bold uppercase">Borrar Ruta</button>
                     </div>
                     <ul id="pending-list" class="space-y-3"></ul>
                 </div>
 
                 <div id="completed-section" class="hidden space-y-3 pt-4 border-t border-slate-200">
-                    <h2 class="font-bold text-slate-400 text-sm uppercase tracking-tighter px-2">Entregado Hoy</h2>
+                    <h2 class="font-bold text-slate-400 text-sm uppercase tracking-tighter px-2">Completado Hoy</h2>
                     <ul id="completed-list" class="space-y-2 opacity-60"></ul>
                 </div>
             </div>
@@ -115,16 +120,16 @@
 
     <script>
         const CITY_SUFFIX = ", Junín, Buenos Aires, Argentina";
-        let map, originMarker, routeLine, origin;
+        let map, originMarker, routeLine;
         let stops = JSON.parse(localStorage.getItem('stops_v3')) || [];
         let completed = JSON.parse(localStorage.getItem('completed_v3')) || [];
         let directory = JSON.parse(localStorage.getItem('directory_v3')) || {};
+        let origin = JSON.parse(localStorage.getItem('origin_v3')) || null;
 
         function initMap() {
             map = L.map('map', { zoomControl: false }).setView([-34.585, -60.948], 14);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
             updateDirectoryUI();
-            loadOrigin();
             renderAll();
         }
 
@@ -148,12 +153,6 @@
 
         async function searchAndAdd(asOrigin = false) {
             const addr = document.getElementById('address-input').value;
-            const name = document.getElementById('name-input').value;
-            const phone = document.getElementById('phone-input').value;
-            const y = parseInt(document.getElementById('qty-yogur').value) || 0;
-            const g = parseInt(document.getElementById('qty-granola').value) || 0;
-            const notes = document.getElementById('notes-input').value;
-
             if (!addr) return;
 
             try {
@@ -161,41 +160,52 @@
                 const data = await res.json();
                 if (data[0]) {
                     const latlng = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                    
                     if (asOrigin) {
                         origin = latlng;
                         localStorage.setItem('origin_v3', JSON.stringify(origin));
-                        renderAll();
                     } else {
-                        // Guardar en agenda
+                        const name = document.getElementById('name-input').value;
+                        const phone = document.getElementById('phone-input').value;
+                        const y = parseInt(document.getElementById('qty-yogur').value) || 0;
+                        const g = parseInt(document.getElementById('qty-granola').value) || 0;
+                        const notes = document.getElementById('notes-input').value;
+
                         directory[addr] = { name: name, phone: phone, notes: notes };
                         localStorage.setItem('directory_v3', JSON.stringify(directory));
                         
                         stops.push({ id: Date.now(), latlng: latlng, addr: addr, name: name, phone: phone, yogur: y, granola: g, notes: notes });
                         saveStops();
-                        renderAll();
                     }
+                    renderAll();
                     resetInputs();
                 }
-            } catch (e) { alert("Error al buscar dirección"); }
+            } catch (e) { alert("Error de conexión"); }
         }
 
         function renderAll() {
-            // Limpiar Mapa
             if (originMarker) map.removeLayer(originMarker);
             if (routeLine) map.removeLayer(routeLine);
             map.eachLayer(l => { if(l instanceof L.Marker) map.removeLayer(l); });
 
-            // Dibujar Origen
             if (origin) {
                 const icon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', iconSize: [25, 41], iconAnchor: [12, 41] });
                 originMarker = L.marker(origin, {icon: icon}).addTo(map);
             }
 
-            // Dibujar Pendientes
             stops.forEach(s => { L.marker(s.latlng).addTo(map); });
+
+            if (origin && stops.length > 0) {
+                const pts = [[origin.lat, origin.lng], ...stops.map(s => [s.latlng.lat, s.latlng.lng])];
+                routeLine = L.polyline(pts, {color: '#2563eb', weight: 3, dashArray: '5, 10'}).addTo(map);
+                document.getElementById('gps-button').classList.remove('hidden');
+            } else {
+                document.getElementById('gps-button').classList.add('hidden');
+            }
 
             updateListsUI();
             updateSummary();
+            updateDirectoryUI();
         }
 
         function updateListsUI() {
@@ -211,21 +221,21 @@
                 li.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-100 animate-fade-in";
                 li.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <p class="text-xs font-black uppercase text-blue-700">${s.name || 'Cliente'}</p>
-                            <p class="text-[10px] text-slate-500">${s.addr}</p>
+                        <div class="overflow-hidden">
+                            <p class="text-[10px] font-black uppercase text-blue-700 truncate">${s.name || 'Cliente'}</p>
+                            <p class="text-[9px] text-slate-500 truncate">${s.addr}</p>
                         </div>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 shrink-0">
                             <button onclick="sendWhatsApp('${s.phone}', '${s.name}', '${s.addr}')" class="p-2 bg-green-100 text-green-700 rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                             </button>
-                            <button onclick="deliver(${s.id})" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold">ENTREGAR</button>
+                            <button onclick="deliver(${s.id})" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-[9px] font-bold">LISTO</button>
                         </div>
                     </div>
-                    <div class="flex gap-3 text-[10px] font-bold">
-                        <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded">🥛 ${s.yogur}</span>
-                        <span class="bg-green-50 text-green-700 px-2 py-1 rounded">🌾 ${s.granola}</span>
-                        ${s.notes ? `<span class="bg-amber-50 text-amber-700 px-2 py-1 rounded italic">📝 ${s.notes}</span>` : ''}
+                    <div class="flex gap-2 text-[9px] font-bold">
+                        <span class="bg-blue-50 text-blue-800 px-2 py-1 rounded">🥛 ${s.yogur}</span>
+                        <span class="bg-green-50 text-green-800 px-2 py-1 rounded">🌾 ${s.granola}</span>
+                        ${s.notes ? `<span class="bg-amber-50 text-amber-800 px-2 py-1 rounded italic truncate">📝 ${s.notes}</span>` : ''}
                     </div>
                 `;
                 pList.appendChild(li);
@@ -262,7 +272,7 @@
         }
 
         function optimizeRoute() {
-            if(!origin || stops.length < 2) return;
+            if(!origin || stops.length < 1) return;
             let unvisited = [...stops], ordered = [], current = origin;
             while(unvisited.length > 0) {
                 let nearIdx = 0, minDist = Infinity;
@@ -277,17 +287,17 @@
             stops = ordered;
             saveStops();
             renderAll();
-            
-            const pts = [[origin.lat, origin.lng], ...stops.map(s => [s.latlng.lat, s.latlng.lng])];
-            routeLine = L.polyline(pts, {color: '#2563eb', weight: 3, dashArray: '5, 10'}).addTo(map);
-            map.fitBounds(routeLine.getBounds(), {padding: [30,30]});
         }
 
         function openInGoogleMaps() {
-            if(!origin || !stops.length) return;
-            const dest = stops[stops.length-1].latlng;
+            if(!origin || stops.length === 0) return;
+            const originStr = `${origin.lat},${origin.lng}`;
+            const destStr = `${stops[stops.length-1].latlng.lat},${stops[stops.length-1].latlng.lng}`;
             const waypoints = stops.slice(0, -1).map(s => `${s.latlng.lat},${s.latlng.lng}`).join('|');
-            window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${dest.lat},${dest.lng}&waypoints=${waypoints}&travelmode=driving`);
+            
+            // Usamos el formato universal de Google Maps
+            const url = `https://www.google.com/maps/dir/?api=1&origin=${originStr}&destination=${destStr}&waypoints=${waypoints}&travelmode=driving`;
+            window.open(url, '_blank');
         }
 
         function toggleSummary() { document.getElementById('summary-panel').classList.toggle('hidden'); }
@@ -301,13 +311,12 @@
             document.getElementById('qty-granola').value = 0;
         }
         function clearEverything() {
-            if(confirm("¿Borrar ruta y entregas del día? (La agenda de clientes se mantiene)")) {
+            if(confirm("¿Borrar ruta?")) {
                 stops = []; completed = [];
                 localStorage.removeItem('stops_v3'); localStorage.removeItem('completed_v3');
                 renderAll();
             }
         }
-        function loadOrigin() { origin = JSON.parse(localStorage.getItem('origin_v3')); }
         function setSearchAsOrigin() { searchAndAdd(true); }
 
         window.onload = initMap;
