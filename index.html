@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Yogur Griego Junín - Logística V10</title>
+    <title>Yogur Griego Junín - Sistema V11</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1d4ed8">
@@ -17,200 +17,290 @@
     
     <style>
         body { -webkit-tap-highlight-color: transparent; font-family: system-ui, sans-serif; }
-        #map { height: 20vh; width: 100%; border-radius: 1.5rem; z-index: 1; margin-bottom: 10px; }
-        .app-container { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        #map { height: 200px; width: 100%; border-radius: 1.5rem; z-index: 1; }
+        .app-container { height: 100vh; display: flex; flex-direction: column; }
         .content-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-slate-50">
 
     <div class="app-container">
-        <header class="bg-blue-800 text-white p-4 pt-6 shadow-lg shrink-0">
+        <header class="bg-blue-800 text-white p-4 shadow-lg">
             <div class="max-w-xl mx-auto flex justify-between items-center">
                 <div>
-                    <h1 class="text-lg font-bold leading-none mb-1">Hoja de Ruta</h1>
-                    <input type="date" id="view-date" onchange="renderAll()" class="bg-blue-700 text-[11px] font-bold uppercase p-1.5 rounded border-none text-white outline-none">
+                    <h1 class="text-lg font-bold">Gestión de Reparto</h1>
+                    <input type="date" id="view-date" onchange="renderAll()" class="bg-blue-700 text-white text-xs p-1 rounded border-none outline-none">
                 </div>
-                <button onclick="toggleSummary()" class="bg-blue-600 p-2.5 rounded-xl shadow-inner active:scale-90">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <button onclick="toggleSummary()" class="bg-blue-600 p-2 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </button>
             </div>
         </header>
 
-        <div class="content-scroll">
-            <div class="max-w-xl mx-auto p-4 space-y-4 pb-28">
+        <div class="content-scroll p-4 space-y-4 pb-20">
+            <div id="summary-panel" class="hidden bg-slate-900 text-white p-4 rounded-3xl space-y-3">
+                <div class="grid grid-cols-2 gap-2 text-center">
+                    <div class="bg-slate-800 p-2 rounded-xl"><p id="total-cash" class="text-green-400 font-bold">$0</p><p class="text-[8px] uppercase">Efectivo</p></div>
+                    <div class="bg-slate-800 p-2 rounded-xl"><p id="total-transfer" class="text-blue-400 font-bold">$0</p><p class="text-[8px] uppercase">Transf.</p></div>
+                </div>
+                <div class="text-center border-t border-slate-700 pt-2">
+                    <p id="total-general" class="text-xl font-bold">$0</p>
+                    <p class="text-[8px] uppercase opacity-50">Total Hoy</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-3xl shadow-md border border-slate-200 space-y-3">
+                <div class="flex gap-2">
+                    <input type="date" id="input-date" class="w-1/3 p-3 bg-slate-100 rounded-xl text-xs font-bold outline-none">
+                    <input type="text" id="address-input" list="client-suggestions" placeholder="Dirección y Número" class="w-2/3 p-3 bg-slate-100 rounded-xl text-sm outline-none">
+                    <datalist id="client-suggestions"></datalist>
+                </div>
                 
-                <div id="summary-panel" class="hidden bg-slate-900 text-white p-5 rounded-3xl animate-fade-in space-y-4 border border-slate-700">
-                    <div class="grid grid-cols-2 gap-3 text-center">
-                        <div class="bg-slate-800 p-3 rounded-2xl border border-slate-700">
-                            <p id="total-cash" class="text-xl font-black text-green-400">$0</p>
-                            <p class="text-[9px] opacity-60 uppercase font-bold">Efectivo</p>
-                        </div>
-                        <div class="bg-slate-800 p-3 rounded-2xl border border-slate-700">
-                            <p id="total-transfer" class="text-xl font-black text-blue-400">$0</p>
-                            <p class="text-[9px] opacity-60 uppercase font-bold">Transferencia</p>
-                        </div>
-                    </div>
-                    <div class="bg-blue-900/40 p-4 rounded-2xl border border-blue-500/30 text-center">
-                        <p id="total-general" class="text-2xl font-black text-white">$0</p>
-                        <p class="text-[10px] opacity-60 uppercase font-bold tracking-wider">Recaudación Total</p>
-                    </div>
-                    <div class="flex justify-around border-t border-slate-700 pt-3 text-[10px] font-bold uppercase text-slate-400">
-                        <div>Yogures: <span id="total-yogur-sum" class="text-white">0</span></div>
-                        <div>Granola: <span id="total-granola-sum" class="text-white">0</span></div>
-                    </div>
+                <div class="flex gap-2">
+                    <input type="text" id="name-input" placeholder="Nombre" class="w-1/2 p-3 bg-slate-100 rounded-xl text-sm outline-none">
+                    <input type="tel" id="phone-input" placeholder="WhatsApp" class="w-1/2 p-3 bg-slate-100 rounded-xl text-sm outline-none">
                 </div>
 
-                <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 space-y-3">
-                    <div class="grid grid-cols-1 gap-2">
-                        <div class="flex gap-2">
-                            <input type="date" id="input-date" class="w-1/3 px-2 py-3 bg-slate-100 rounded-xl text-xs font-bold outline-none border-2 border-transparent focus:border-blue-500">
-                            <input type="text" id="address-input" list="client-suggestions" placeholder="Dirección" 
-                                   class="w-2/3 px-4 py-3 bg-slate-100 rounded-xl text-sm outline-none border-2 border-transparent focus:border-blue-500" oninput="checkDirectory(this.value)">
-                        </div>
-                        <datalist id="client-suggestions"></datalist>
-                        
-                        <div class="flex gap-2">
-                            <input type="text" id="name-input" placeholder="Nombre" class="w-1/2 px-4 py-3 bg-slate-100 rounded-xl text-sm outline-none">
-                            <input type="tel" id="phone-input" placeholder="WhatsApp" class="w-1/2 px-4 py-3 bg-slate-100 rounded-xl text-sm outline-none">
-                        </div>
-
-                        <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
-                            <div class="text-center">
-                                <label class="text-[8px] font-bold text-slate-400 uppercase">Yogur</label>
-                                <input type="number" id="qty-yogur" value="0" class="w-full bg-transparent font-bold text-center outline-none">
-                            </div>
-                            <div class="text-center border-x border-slate-200">
-                                <label class="text-[8px] font-bold text-slate-400 uppercase">Granola</label>
-                                <input type="number" id="qty-granola" value="0" class="w-full bg-transparent font-bold text-center outline-none">
-                            </div>
-                            <div class="text-center">
-                                <label class="text-[8px] font-bold text-blue-600 uppercase">Total $</label>
-                                <input type="number" id="total-amount" placeholder="0" class="w-full bg-transparent font-bold text-center text-blue-600 outline-none">
-                            </div>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <select id="payment-method" class="w-full px-4 py-3 bg-slate-100 rounded-xl text-xs font-bold outline-none border-2 border-transparent focus:border-blue-500">
-                                <option value="efectivo">Paga en Efectivo 💵</option>
-                                <option value="transferencia">Paga por Transferencia 📱</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button id="btn-add" onclick="searchAndAdd()" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">
-                        GUARDAR PEDIDO
-                    </button>
-                    
-                    <div class="flex gap-2">
-                        <button onclick="setSearchAsOrigin()" class="flex-1 bg-slate-100 text-slate-500 py-2 rounded-lg text-[10px] font-bold uppercase">Punto Inicio</button>
-                        <button onclick="optimizeRoute()" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[10px] font-bold uppercase shadow-md">Optimizar</button>
-                    </div>
+                <div class="grid grid-cols-3 gap-2 bg-blue-50 p-3 rounded-2xl">
+                    <div class="text-center"><label class="block text-[8px] font-bold text-slate-400">YOGUR</label><input type="number" id="qty-yogur" value="0" class="w-full bg-transparent text-center font-bold outline-none"></div>
+                    <div class="text-center border-x border-blue-100"><label class="block text-[8px] font-bold text-slate-400">GRANOLA</label><input type="number" id="qty-granola" value="0" class="w-full bg-transparent text-center font-bold outline-none"></div>
+                    <div class="text-center"><label class="block text-[8px] font-bold text-blue-600">PRECIO $</label><input type="number" id="total-amount" placeholder="0" class="w-full bg-transparent text-center font-bold text-blue-600 outline-none"></div>
                 </div>
 
-                <div id="map" class="shadow-md border-4 border-white"></div>
+                <select id="payment-method" class="w-full p-3 bg-slate-100 rounded-xl text-xs font-bold outline-none">
+                    <option value="efectivo">PAGO EN EFECTIVO 💵</option>
+                    <option value="transferencia">PAGO POR TRANSFERENCIA 📱</option>
+                </select>
 
-                <button onclick="openInGoogleMaps()" id="gps-button" class="hidden w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl flex items-center justify-center gap-3 active:bg-black transition-colors">
-                    ABRIR RECORRIDO EN GPS
+                <button id="btn-add" onclick="searchAndAdd()" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">
+                    GUARDAR PEDIDO
                 </button>
-
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center px-2">
-                        <h2 class="font-bold text-slate-800 text-[11px] uppercase tracking-wider">Pendientes (<span id="count-pending">0</span>)</h2>
-                        <button onclick="clearEverything()" class="text-[10px] text-red-500 font-bold uppercase">Borrar Día</button>
-                    </div>
-                    <ul id="pending-list" class="space-y-3"></ul>
+                
+                <div class="flex gap-2">
+                    <button onclick="setSearchAsOrigin()" class="flex-1 bg-slate-100 text-slate-500 py-2 rounded-lg text-[10px] font-bold uppercase">Inicio</button>
+                    <button onclick="optimizeRoute()" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[10px] font-bold uppercase">Optimizar</button>
                 </div>
+            </div>
 
-                <div id="completed-section" class="hidden space-y-3 pt-4 border-t border-slate-200">
-                    <h2 class="font-bold text-slate-400 text-[11px] uppercase px-2">Entregas Finalizadas</h2>
-                    <ul id="completed-list" class="space-y-2"></ul>
+            <div id="map" class="shadow-md"></div>
+
+            <button onclick="openInGoogleMaps()" id="gps-button" class="hidden w-full bg-slate-900 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
+                ABRIR EN GOOGLE MAPS
+            </button>
+
+            <div class="space-y-4">
+                <div class="flex justify-between items-center px-2">
+                    <h2 class="font-bold text-slate-800 text-xs uppercase tracking-widest">Pendientes (<span id="count-pending">0</span>)</h2>
+                    <button onclick="clearEverything()" class="text-[10px] text-red-500 font-bold uppercase">Borrar Todo</button>
+                </div>
+                <ul id="pending-list" class="space-y-3"></ul>
+                
+                <div id="completed-section" class="hidden pt-4 border-t">
+                    <h2 class="font-bold text-slate-400 text-[10px] uppercase mb-2">Entregas del Día</h2>
+                    <ul id="completed-list" class="space-y-2 opacity-60"></ul>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- CONFIGURACIÓN Y VARIABLES ---
         const CITY_SUFFIX = ", Junín, Buenos Aires, Argentina";
         let map, originMarker, routeLine;
         
-        let stops = JSON.parse(localStorage.getItem('stops_v10')) || [];
-        let completed = JSON.parse(localStorage.getItem('completed_v10')) || [];
-        let directory = JSON.parse(localStorage.getItem('directory_v10')) || {};
-        let origin = JSON.parse(localStorage.getItem('origin_v10')) || null;
+        let stops = JSON.parse(localStorage.getItem('stops_v11')) || [];
+        let completed = JSON.parse(localStorage.getItem('completed_v11')) || [];
+        let directory = JSON.parse(localStorage.getItem('directory_v11')) || {};
+        let origin = JSON.parse(localStorage.getItem('origin_v11')) || null;
 
-        function initMap() {
+        // --- INICIALIZACIÓN (Solución al error de fechas) ---
+        window.onload = function() {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('view-date').value = hoy;
             document.getElementById('input-date').value = hoy;
 
-            if (!map) {
-                map = L.map('map', { zoomControl: false }).setView([-34.585, -60.948], 14);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-            }
+            map = L.map('map', { zoomControl: false }).setView([-34.585, -60.948], 14);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
             
-            updateDirectoryUI();
             renderAll();
-        }
+        };
 
-        function checkDirectory(addr) {
-            if (directory[addr]) {
-                document.getElementById('name-input').value = directory[addr].name || "";
-                document.getElementById('phone-input').value = directory[addr].phone || "";
-            }
-        }
-
-        function updateDirectoryUI() {
-            const dl = document.getElementById('client-suggestions');
-            dl.innerHTML = '';
-            Object.keys(directory).forEach(a => {
-                const o = document.createElement('option');
-                o.value = a;
-                dl.appendChild(o);
-            });
-        }
-
+        // --- FUNCIONES CORE ---
         async function searchAndAdd(asOrigin = false) {
-            const btn = document.getElementById('btn-add');
             const addr = document.getElementById('address-input').value;
             const date = document.getElementById('input-date').value;
-            if (!addr) return;
+            const btn = document.getElementById('btn-add');
 
-            btn.disabled = true; btn.innerText = "BUSCANDO...";
+            if (!addr) { alert("Escribe una dirección"); return; }
+
+            btn.disabled = true;
+            btn.innerText = "BUSCANDO...";
 
             try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr + CITY_SUFFIX)}&limit=1`);
-                const data = await res.json();
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr + CITY_SUFFIX)}&limit=1`);
+                const data = await response.json();
+
                 if (data && data.length > 0) {
                     const latlng = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
                     
                     if (asOrigin) {
                         origin = latlng;
-                        localStorage.setItem('origin_v10', JSON.stringify(origin));
+                        localStorage.setItem('origin_v11', JSON.stringify(origin));
                     } else {
                         const name = document.getElementById('name-input').value;
                         const phone = document.getElementById('phone-input').value;
                         const y = parseInt(document.getElementById('qty-yogur').value) || 0;
                         const g = parseInt(document.getElementById('qty-granola').value) || 0;
-                        const amount = parseFloat(document.getElementById('total-amount').value) || 0;
-                        const method = document.getElementById('payment-method').value;
+                        const amt = parseFloat(document.getElementById('total-amount').value) || 0;
+                        const pay = document.getElementById('payment-method').value;
 
-                        directory[addr] = { name, phone };
-                        localStorage.setItem('directory_v10', JSON.stringify(directory));
-                        
-                        stops.push({ id: Date.now(), latlng, addr, name, phone, yogur: y, granola: g, amount, method, date });
-                        saveStops();
+                        stops.push({ id: Date.now(), latlng, addr, name, phone, yogur: y, granola: g, amount: amt, method: pay, date: date });
+                        save();
                     }
-                    renderAll(); resetInputs(); updateDirectoryUI();
-                } else { alert("No se encontró la dirección. Intenta con calle y número."); }
-            } catch (e) { console.error(e); }
-            finally { btn.disabled = false; btn.innerText = "GUARDAR PEDIDO"; }
+                    renderAll();
+                    resetInputs();
+                } else {
+                    alert("No encontramos esa dirección en Junín. Asegúrate de poner calle y altura.");
+                }
+            } catch (err) {
+                alert("Error de conexión. Revisa tu internet.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "GUARDAR PEDIDO";
+            }
         }
 
         function renderAll() {
             const currentViewDate = document.getElementById('view-date').value;
+            
+            // Limpiar Mapa
             if (originMarker) map.removeLayer(originMarker);
             if (routeLine) map.removeLayer(routeLine);
-            map.each
+            map.eachLayer(l => { if(l instanceof L.Marker) map.removeLayer(l); });
+
+            if (origin) {
+                const icon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', iconSize: [25, 41], iconAnchor: [12, 41] });
+                originMarker = L.marker(origin, {icon}).addTo(map);
+            }
+
+            const visibleStops = stops.filter(s => s.date === currentViewDate);
+            const visibleDone = completed.filter(s => s.date === currentViewDate);
+
+            // Pintar Marcadores
+            visibleStops.forEach(s => L.marker(s.latlng).addTo(map));
+
+            // Pintar Listas
+            const pList = document.getElementById('pending-list');
+            const cList = document.getElementById('completed-list');
+            pList.innerHTML = ''; cList.innerHTML = '';
+            
+            document.getElementById('count-pending').innerText = visibleStops.length;
+            document.getElementById('completed-section').classList.toggle('hidden', visibleDone.length === 0);
+
+            let cash = 0, trans = 0;
+
+            visibleStops.forEach(s => {
+                const li = document.createElement('li');
+                li.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center";
+                li.innerHTML = `
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-bold text-blue-800 uppercase">${s.name || 'Sin Nombre'}</p>
+                        <p class="text-[10px] text-slate-500 truncate">${s.addr}</p>
+                        <p class="text-[10px] font-bold text-green-600 mt-1">$${s.amount} (${s.method === 'efectivo' ? 'Ef.' : 'Tr.'})</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="sendWA('${s.phone}', '${s.name}', '${s.addr}')" class="p-2 bg-green-100 text-green-700 rounded-lg">WA</button>
+                        <button onclick="deliver(${s.id})" class="bg-blue-700 text-white px-3 py-1 rounded-lg text-[10px] font-bold">OK</button>
+                    </div>
+                `;
+                pList.appendChild(li);
+            });
+
+            visibleDone.forEach(s => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between text-[10px] bg-slate-100 p-2 rounded-lg";
+                li.innerHTML = `<span>${s.name} - $${s.amount}</span> <span class="text-green-600 font-bold">ENTREGADO</span>`;
+                cList.appendChild(li);
+                if(s.method === 'efectivo') cash += s.amount; else trans += s.amount;
+            });
+
+            // Totales
+            document.getElementById('total-cash').innerText = `$${cash}`;
+            document.getElementById('total-transfer').innerText = `$${trans}`;
+            document.getElementById('total-general').innerText = `$${cash + trans}`;
+
+            // Linea de Ruta
+            if (origin && visibleStops.length > 0) {
+                const pts = [[origin.lat, origin.lng], ...visibleStops.map(s => [s.latlng.lat, s.latlng.lng])];
+                routeLine = L.polyline(pts, {color: '#1e40af', weight: 2, dashArray: '5, 10'}).addTo(map);
+                document.getElementById('gps-button').classList.remove('hidden');
+            } else {
+                document.getElementById('gps-button').classList.add('hidden');
+            }
+        }
+
+        function deliver(id) {
+            const idx = stops.findIndex(s => s.id === id);
+            if (idx === -1) return;
+            completed.push(stops[idx]);
+            stops.splice(idx, 1);
+            save(); renderAll();
+        }
+
+        function save() {
+            localStorage.setItem('stops_v11', JSON.stringify(stops));
+            localStorage.setItem('completed_v11', JSON.stringify(completed));
+        }
+
+        function resetInputs() {
+            document.getElementById('address-input').value = '';
+            document.getElementById('name-input').value = '';
+            document.getElementById('phone-input').value = '';
+            document.getElementById('qty-yogur').value = 0;
+            document.getElementById('qty-granola').value = 0;
+            document.getElementById('total-amount').value = '';
+        }
+
+        function openInGoogleMaps() {
+            const d = document.getElementById('view-date').value;
+            const vs = stops.filter(s => s.date === d);
+            if(!origin || vs.length === 0) return;
+            const start = `${origin.lat},${origin.lng}`;
+            const end = `${vs[vs.length-1].latlng.lat},${vs[vs.length-1].latlng.lng}`;
+            const via = vs.slice(0, -1).map(s => `${s.latlng.lat},${s.latlng.lng}`).join('|');
+            window.open(`https://www.google.com/maps/dir/?api=1&origin=${start}&destination=${end}&waypoints=${encodeURIComponent(via)}&travelmode=driving`);
+        }
+
+        function sendWA(p, n, a) {
+            const num = p.replace(/\D/g, '');
+            const final = num.length <= 10 ? '549' + num : num;
+            const msg = `Hola ${n}, soy Claudio. Estoy yendo a ${a} con tu pedido de Yogur Griego Junín.`;
+            window.open(`https://wa.me/${final}?text=${encodeURIComponent(msg)}`);
+        }
+
+        function toggleSummary() { document.getElementById('summary-panel').classList.toggle('hidden'); }
+        function setSearchAsOrigin() { searchAndAdd(true); }
+        function clearEverything() { if(confirm("¿Borrar datos del día?")) { const d = document.getElementById('view-date').value; stops = stops.filter(s=>s.date!==d); completed=completed.filter(s=>s.date!==d); save(); renderAll(); } }
+        
+        function optimizeRoute() {
+            const d = document.getElementById('view-date').value;
+            if(!origin) return;
+            let dayStops = stops.filter(s => s.date === d);
+            let otherStops = stops.filter(s => s.date !== d);
+            let ordered = [], current = origin;
+            while(dayStops.length > 0) {
+                let nearIdx = 0, minDist = Infinity;
+                dayStops.forEach((s, i) => {
+                    const dist = Math.hypot(current.lat - s.latlng.lat, current.lng - s.latlng.lng);
+                    if(dist < minDist) { minDist = dist; nearIdx = i; }
+                });
+                ordered.push(dayStops[nearIdx]);
+                current = dayStops[nearIdx].latlng;
+                dayStops.splice(nearIdx, 1);
+            }
+            stops = [...ordered, ...otherStops];
+            save(); renderAll();
+        }
+    </script>
+</body>
+</html>
