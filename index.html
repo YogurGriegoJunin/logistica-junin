@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Logística - Yogur Griego Junín</title>
+    <title>Logística y Contabilidad - Yogur Griego Junín</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1d4ed8">
@@ -17,7 +17,7 @@
     
     <style>
         body { -webkit-tap-highlight-color: transparent; font-family: system-ui, sans-serif; }
-        #map { height: 25vh; width: 100%; border-radius: 1.5rem; z-index: 1; }
+        #map { height: 20vh; width: 100%; border-radius: 1.5rem; z-index: 1; }
         .app-container { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         .content-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -27,34 +27,48 @@
 <body class="bg-slate-50 text-slate-900">
 
     <div class="app-container">
-        <header class="bg-blue-700 text-white p-4 pt-6 shadow-lg shrink-0">
+        <header class="bg-blue-800 text-white p-4 pt-6 shadow-lg shrink-0">
             <div class="max-w-xl mx-auto flex justify-between items-center">
                 <div>
-                    <h1 class="text-lg font-bold">Hoja de Ruta</h1>
-                    <input type="date" id="view-date" onchange="renderAll()" class="bg-blue-600 text-[10px] font-bold uppercase p-1 rounded border-none text-white outline-none">
+                    <h1 class="text-lg font-bold">Gestión de Ventas</h1>
+                    <input type="date" id="view-date" onchange="renderAll()" class="bg-blue-700 text-[10px] font-bold uppercase p-1 rounded border-none text-white outline-none">
                 </div>
-                <div class="flex gap-2">
-                    <label class="bg-blue-500 p-2 rounded-lg shadow-inner active:scale-90 cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        <input type="file" id="csv-import" class="hidden" accept=".csv" onchange="handleImport(event)">
-                    </label>
-                    <button onclick="toggleSummary()" class="bg-blue-500 p-2 rounded-lg shadow-inner active:scale-90">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
-                    </button>
-                </div>
+                <button onclick="toggleSummary()" class="bg-blue-600 p-2 rounded-lg shadow-inner active:scale-90">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </button>
             </div>
         </header>
 
         <div class="content-scroll">
             <div class="max-w-xl mx-auto p-4 space-y-4 pb-28">
                 
+                <div id="summary-panel" class="hidden bg-slate-900 text-white p-5 rounded-3xl animate-fade-in space-y-4">
+                    <div class="grid grid-cols-2 gap-3 text-center">
+                        <div class="bg-slate-800 p-3 rounded-2xl border border-slate-700">
+                            <p id="total-cash" class="text-xl font-black text-green-400">$0</p>
+                            <p class="text-[9px] opacity-60 uppercase font-bold">Efectivo</p>
+                        </div>
+                        <div class="bg-slate-800 p-3 rounded-2xl border border-slate-700">
+                            <p id="total-transfer" class="text-xl font-black text-blue-400">$0</p>
+                            <p class="text-[9px] opacity-60 uppercase font-bold">Transferencia</p>
+                        </div>
+                    </div>
+                    <div class="bg-blue-900/30 p-3 rounded-2xl border border-blue-500/30 text-center">
+                        <p id="total-general" class="text-2xl font-black text-white">$0</p>
+                        <p class="text-[10px] opacity-60 uppercase font-bold">Total Recaudado Hoy</p>
+                    </div>
+                    <div class="flex justify-around border-t border-slate-700 pt-3 text-[10px] font-bold uppercase">
+                        <div>🥛 <span id="total-yogur">0</span></div>
+                        <div>🌾 <span id="total-granola">0</span></div>
+                    </div>
+                </div>
+
                 <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 space-y-3">
                     <div class="grid grid-cols-1 gap-2">
                         <div class="flex gap-2">
-                            <input type="date" id="input-date" class="w-1/3 px-3 py-3 bg-slate-100 rounded-xl text-xs font-bold outline-none border-2 border-transparent focus:border-blue-500 transition-all">
+                            <input type="date" id="input-date" class="w-1/3 px-2 py-3 bg-slate-100 rounded-xl text-xs font-bold outline-none border-2 border-transparent focus:border-blue-500">
                             <input type="text" id="address-input" list="client-suggestions" placeholder="Dirección" 
-                                   class="w-2/3 px-4 py-3 bg-slate-100 rounded-xl text-sm outline-none border-2 border-transparent focus:border-blue-500"
-                                   oninput="checkDirectory(this.value)">
+                                   class="w-2/3 px-4 py-3 bg-slate-100 rounded-xl text-sm outline-none" oninput="checkDirectory(this.value)">
                         </div>
                         <datalist id="client-suggestions"></datalist>
                         
@@ -63,43 +77,56 @@
                             <input type="tel" id="phone-input" placeholder="WhatsApp" class="w-1/2 px-4 py-3 bg-slate-100 rounded-xl text-sm outline-none">
                         </div>
 
-                        <div class="flex gap-2 bg-blue-50 p-2 rounded-xl text-center font-bold">
-                            <div class="flex-1 text-blue-700">
-                                <label class="text-[9px] uppercase">Yogur</label>
-                                <input type="number" id="qty-yogur" value="0" class="w-full bg-transparent text-center outline-none">
+                        <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2 rounded-2xl">
+                            <div class="text-center">
+                                <label class="text-[8px] font-bold text-slate-400 uppercase">Yogur</label>
+                                <input type="number" id="qty-yogur" value="0" class="w-full bg-transparent font-bold text-center outline-none">
                             </div>
-                            <div class="flex-1 border-l border-blue-200 text-blue-700">
-                                <label class="text-[9px] uppercase">Granola</label>
-                                <input type="number" id="qty-granola" value="0" class="w-full bg-transparent text-center outline-none">
+                            <div class="text-center border-x border-slate-200">
+                                <label class="text-[8px] font-bold text-slate-400 uppercase">Granola</label>
+                                <input type="number" id="qty-granola" value="0" class="w-full bg-transparent font-bold text-center outline-none">
+                            </div>
+                            <div class="text-center">
+                                <label class="text-[8px] font-bold text-blue-600 uppercase">Monto $</label>
+                                <input type="number" id="total-amount" placeholder="0" class="w-full bg-transparent font-bold text-center text-blue-600 outline-none">
                             </div>
                         </div>
 
-                        <textarea id="notes-input" placeholder="Notas adicionales..." class="w-full px-4 py-2 bg-slate-100 rounded-xl text-xs outline-none h-14"></textarea>
+                        <div class="flex gap-2">
+                            <select id="payment-method" class="w-full px-4 py-3 bg-slate-100 rounded-xl text-xs font-bold outline-none border-2 border-transparent focus:border-blue-500 appearance-none">
+                                <option value="efectivo">EFECTIVO 💵</option>
+                                <option value="transferencia">TRANSFERENCIA 📱</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <button id="btn-add" onclick="searchAndAdd()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">
-                        AÑADIR A REPARTO
+                    <button id="btn-add" onclick="searchAndAdd()" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">
+                        GUARDAR PEDIDO
                     </button>
                     
                     <div class="flex gap-2">
                         <button onclick="setSearchAsOrigin()" class="flex-1 bg-slate-100 text-slate-500 py-2 rounded-lg text-[10px] font-bold uppercase">Inicio</button>
-                        <button onclick="optimizeRoute()" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[10px] font-bold uppercase shadow-md">Optimizar</button>
+                        <button onclick="optimizeRoute()" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[10px] font-bold uppercase shadow-md">Optimizar Ruta</button>
                     </div>
                 </div>
 
                 <div id="map" class="shadow-md border-4 border-white"></div>
 
-                <button onclick="openInGoogleMaps()" id="gps-button" class="hidden w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl flex items-center justify-center gap-3 animate-fade-in active:bg-black">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2 6.3-6.4 2.1 2-6.3z"/></svg>
+                <button onclick="openInGoogleMaps()" id="gps-button" class="hidden w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl flex items-center justify-center gap-3 active:scale-95">
                     ABRIR RUTA EN GOOGLE MAPS
                 </button>
 
                 <div class="space-y-3">
                     <div class="flex justify-between items-center px-2">
                         <h2 class="font-bold text-slate-800 text-sm uppercase">Pendientes (<span id="count-pending">0</span>)</h2>
-                        <button onclick="clearEverything()" class="text-[10px] text-red-500 font-bold uppercase">Limpiar</button>
+                        <button onclick="clearEverything()" class="text-[10px] text-red-500 font-bold uppercase">Borrar Día</button>
                     </div>
                     <ul id="pending-list" class="space-y-3"></ul>
+                </div>
+
+                <div id="completed-section" class="hidden space-y-3 pt-4 border-t border-slate-200">
+                    <h2 class="font-bold text-slate-400 text-sm uppercase px-2">Entregas Finalizadas</h2>
+                    <ul id="completed-list" class="space-y-2"></ul>
                 </div>
             </div>
         </div>
@@ -109,10 +136,10 @@
         const CITY_SUFFIX = ", Junín, Buenos Aires, Argentina";
         let map, originMarker, routeLine;
         
-        let stops = JSON.parse(localStorage.getItem('stops_v8')) || [];
-        let completed = JSON.parse(localStorage.getItem('completed_v8')) || [];
-        let directory = JSON.parse(localStorage.getItem('directory_v8')) || {};
-        let origin = JSON.parse(localStorage.getItem('origin_v8')) || null;
+        let stops = JSON.parse(localStorage.getItem('stops_v9')) || [];
+        let completed = JSON.parse(localStorage.getItem('completed_v9')) || [];
+        let directory = JSON.parse(localStorage.getItem('directory_v9')) || {};
+        let origin = JSON.parse(localStorage.getItem('origin_v9')) || null;
 
         function initMap() {
             const hoy = new Date().toISOString().split('T')[0];
@@ -124,44 +151,10 @@
             renderAll();
         }
 
-        // --- FUNCIÓN PARA IMPORTAR CSV ---
-        function handleImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const text = e.target.result;
-                const rows = text.split('\n');
-                let count = 0;
-
-                rows.forEach(row => {
-                    // Soporta CSV separado por coma o punto y coma
-                    const columns = row.split(/[;,]/);
-                    if (columns.length >= 2) {
-                        const name = columns[0].trim().replace(/"/g, '');
-                        const phone = columns[1].trim().replace(/"/g, '');
-                        const address = columns[2] ? columns[2].trim().replace(/"/g, '') : "";
-
-                        if (address && address.length > 3) {
-                            directory[address] = { name, phone, notes: "Importado de WhatsApp" };
-                            count++;
-                        }
-                    }
-                });
-
-                localStorage.setItem('directory_v8', JSON.stringify(directory));
-                updateDirectoryUI();
-                alert(`Se importaron ${count} clientes a tu agenda.`);
-            };
-            reader.readAsText(file);
-        }
-
         function checkDirectory(addr) {
             if (directory[addr]) {
                 document.getElementById('name-input').value = directory[addr].name || "";
                 document.getElementById('phone-input').value = directory[addr].phone || "";
-                document.getElementById('notes-input').value = directory[addr].notes || "";
             }
         }
 
@@ -180,7 +173,7 @@
             const addr = document.getElementById('address-input').value;
             const date = document.getElementById('input-date').value;
             if (!addr) return;
-            btn.disabled = true; btn.innerText = "BUSCANDO...";
+            btn.disabled = true; btn.innerText = "VERIFICANDO...";
 
             try {
                 const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr + CITY_SUFFIX)}&limit=1`);
@@ -189,22 +182,28 @@
                     const latlng = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
                     if (asOrigin) {
                         origin = latlng;
-                        localStorage.setItem('origin_v8', JSON.stringify(origin));
+                        localStorage.setItem('origin_v9', JSON.stringify(origin));
                     } else {
                         const name = document.getElementById('name-input').value;
                         const phone = document.getElementById('phone-input').value;
                         const y = parseInt(document.getElementById('qty-yogur').value) || 0;
                         const g = parseInt(document.getElementById('qty-granola').value) || 0;
-                        const notes = document.getElementById('notes-input').value;
-                        directory[addr] = { name, phone, notes };
-                        localStorage.setItem('directory_v8', JSON.stringify(directory));
-                        stops.push({ id: Date.now(), latlng, addr, name, phone, yogur: y, granola: g, notes, date });
+                        const amount = parseFloat(document.getElementById('total-amount').value) || 0;
+                        const method = document.getElementById('payment-method').value;
+
+                        directory[addr] = { name, phone };
+                        localStorage.setItem('directory_v9', JSON.stringify(directory));
+                        
+                        stops.push({ 
+                            id: Date.now(), latlng, addr, name, phone, 
+                            yogur: y, granola: g, amount, method, date 
+                        });
                         saveStops();
                     }
                     renderAll(); resetInputs(); updateDirectoryUI();
                 } else { alert("Dirección no encontrada."); }
             } catch (e) { console.error(e); }
-            finally { btn.disabled = false; btn.innerText = "AÑADIR A REPARTO"; }
+            finally { btn.disabled = false; btn.innerText = "GUARDAR PEDIDO"; }
         }
 
         function renderAll() {
@@ -212,87 +211,40 @@
             if (originMarker) map.removeLayer(originMarker);
             if (routeLine) map.removeLayer(routeLine);
             map.eachLayer(l => { if(l instanceof L.Marker) map.removeLayer(l); });
+            
             if (origin) {
                 const icon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', iconSize: [25, 41], iconAnchor: [12, 41] });
                 originMarker = L.marker(origin, {icon}).addTo(map);
             }
+
             const visibleStops = stops.filter(s => s.date === currentViewDate);
+            const visibleCompleted = completed.filter(s => s.date === currentViewDate);
+
             visibleStops.forEach(s => L.marker(s.latlng).addTo(map));
+
             const pList = document.getElementById('pending-list');
-            pList.innerHTML = '';
+            const cList = document.getElementById('completed-list');
+            pList.innerHTML = ''; cList.innerHTML = '';
+
             document.getElementById('count-pending').innerText = visibleStops.length;
+            document.getElementById('completed-section').classList.toggle('hidden', visibleCompleted.length === 0);
+
+            // Contabilidad
+            let cash = 0, transfer = 0, ty = 0, tg = 0;
+
+            // Renderizar Pendientes
             visibleStops.forEach(s => {
                 const li = document.createElement('li');
                 li.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-100 animate-fade-in";
                 li.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
+                    <div class="flex justify-between items-start">
                         <div class="overflow-hidden">
-                            <p class="text-[11px] font-black uppercase text-blue-700 truncate">${s.name || 'Cliente'}</p>
+                            <p class="text-[11px] font-black uppercase text-blue-800 truncate">${s.name || 'S/N'}</p>
                             <p class="text-[9px] text-slate-500 truncate">${s.addr}</p>
+                            <div class="flex gap-2 mt-1">
+                                <span class="text-[10px] font-bold text-green-600">$${s.amount}</span>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold">${s.method === 'efectivo' ? '💵' : '📱'}</span>
+                            </div>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="sendWhatsApp('${s.phone}', '${s.name}', '${s.addr}')" class="p-2 bg-green-100 text-green-700 rounded-lg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button>
-                            <button onclick="deliver(${s.id})" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold">OK</button>
-                        </div>
-                    </div>
-                `;
-                pList.appendChild(li);
-            });
-            if (origin && visibleStops.length > 0) {
-                const pts = [[origin.lat, origin.lng], ...visibleStops.map(s => [s.latlng.lat, s.latlng.lng])];
-                routeLine = L.polyline(pts, {color: '#2563eb', weight: 3, dashArray: '5, 10'}).addTo(map);
-                document.getElementById('gps-button').classList.remove('hidden');
-            } else { document.getElementById('gps-button').classList.add('hidden'); }
-        }
-
-        function deliver(id) {
-            const idx = stops.findIndex(s => s.id === id);
-            if (idx === -1) return;
-            completed.push(stops[idx]);
-            stops.splice(idx, 1);
-            saveStops(); renderAll();
-        }
-
-        function openInGoogleMaps() {
-            const currentViewDate = document.getElementById('view-date').value;
-            const visibleStops = stops.filter(s => s.date === currentViewDate);
-            if(!origin || visibleStops.length === 0) return;
-            const originCoord = `${origin.lat},${origin.lng}`;
-            const finalStop = visibleStops[visibleStops.length - 1];
-            const destCoord = `${finalStop.latlng.lat},${finalStop.latlng.lng}`;
-            const waypoints = visibleStops.slice(0, -1).map(s => `${s.latlng.lat},${s.latlng.lng}`).join('|');
-            window.open(`https://www.google.com/maps/dir/?api=1&origin=${originCoord}&destination=${destCoord}&waypoints=${encodeURIComponent(waypoints)}&travelmode=driving`, '_blank');
-        }
-
-        function sendWhatsApp(phone, name, addr) {
-            const clean = phone.replace(/\D/g, '');
-            const final = clean.length <= 10 ? '549' + clean : clean;
-            const msg = `¡Hola ${name}! Claudio de Yogur Griego Junín. Estoy saliendo para tu domicilio en ${addr}. Llego pronto.`;
-            window.open(`https://wa.me/${final}?text=${encodeURIComponent(msg)}`);
-        }
-
-        function saveStops() { 
-            localStorage.setItem('stops_v8', JSON.stringify(stops));
-            localStorage.setItem('completed_v8', JSON.stringify(completed));
-        }
-        function resetInputs() {
-            document.getElementById('address-input').value = '';
-            document.getElementById('name-input').value = '';
-            document.getElementById('phone-input').value = '';
-            document.getElementById('qty-yogur').value = 0;
-            document.getElementById('qty-granola').value = 0;
-            document.getElementById('notes-input').value = '';
-        }
-        function clearEverything() {
-            const currentViewDate = document.getElementById('view-date').value;
-            if(confirm(`¿Borrar pedidos del ${currentViewDate}?`)) {
-                stops = stops.filter(s => s.date !== currentViewDate);
-                saveStops(); renderAll();
-            }
-        }
-        function toggleSummary() { alert("Yogures: " + document.getElementById('total-yogur').innerText); }
-        function setSearchAsOrigin() { searchAndAdd(true); }
-        window.onload = initMap;
-    </script>
-</body>
-</html>
+                            <button onclick="sendWhatsApp('${s.phone}', '${s.name}', '${s.addr}')" class="p-2 bg-green-100 text-green-700 rounded-lg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84
