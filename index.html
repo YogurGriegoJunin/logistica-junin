@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Logística Yogur Junín - V16</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Yogur Griego Junín - Sistema Seguro</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,128 +13,123 @@
     
     <style>
         body { -webkit-tap-highlight-color: transparent; font-family: system-ui, sans-serif; }
-        #map { height: 180px; width: 100%; border-radius: 1.5rem; z-index: 1; border: 3px solid white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .content-scroll { height: calc(100vh - 70px); overflow-y: auto; padding-bottom: 120px; }
-        #payment-modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
+        #map { height: 180px; width: 100%; border-radius: 2rem; z-index: 1; border: 4px solid white; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .content-scroll { height: calc(100vh - 70px); overflow-y: auto; padding-bottom: 150px; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
+        .btn-active:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="bg-slate-100">
 
-    <div id="payment-modal">
-        <div class="bg-white w-full max-w-xs rounded-3xl p-6 text-center space-y-4 shadow-2xl">
-            <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            </div>
-            <h3 class="font-black text-slate-800 uppercase text-sm">Registrar Pago</h3>
-            <p id="modal-client-name" class="text-xs text-blue-600 font-bold"></p>
+    <div id="payment-modal" class="modal-overlay">
+        <div class="bg-white w-full max-w-xs rounded-[2.5rem] p-8 text-center space-y-5 shadow-2xl">
+            <h3 class="font-black text-slate-800 uppercase text-sm tracking-widest">Registrar Pago</h3>
+            <p id="modal-client-name" class="text-xs text-blue-600 font-bold bg-blue-50 py-2 rounded-full"></p>
             <div class="grid grid-cols-1 gap-3">
-                <button onclick="confirmDelivery('efectivo')" class="bg-green-600 text-white py-4 rounded-2xl font-black shadow-lg active:scale-95 text-sm uppercase">Efectivo 💵</button>
-                <button onclick="confirmDelivery('transferencia')" class="bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg active:scale-95 text-sm uppercase">Transferencia 📱</button>
-                <button onclick="closeModal()" class="text-slate-400 text-[10px] font-bold uppercase py-2">Volver atrás</button>
+                <button onclick="confirmDelivery('efectivo')" class="bg-green-600 text-white py-5 rounded-3xl font-black shadow-lg btn-active text-sm uppercase">Efectivo 💵</button>
+                <button onclick="confirmDelivery('transferencia')" class="bg-blue-600 text-white py-5 rounded-3xl font-black shadow-lg btn-active text-sm uppercase">Transferencia 📱</button>
+                <button onclick="closeModal()" class="text-slate-400 text-[10px] font-black uppercase py-2">Cancelar</button>
             </div>
         </div>
     </div>
 
     <div class="app-container">
-        <header class="bg-blue-700 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-50">
+        <header class="bg-blue-800 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-50 rounded-b-[2rem]">
             <div>
-                <h1 class="text-[10px] font-black uppercase tracking-widest text-blue-200">Reparto Junín</h1>
-                <input type="date" id="view-date" onchange="renderAll()" class="bg-blue-800 text-white text-xs font-bold p-1 rounded mt-1 outline-none border-none">
+                <h1 class="text-[10px] font-black uppercase tracking-widest text-blue-300">Yogur Griego Junín</h1>
+                <input type="date" id="view-date" onchange="renderAll()" class="bg-blue-900 text-white text-xs font-bold p-1 px-2 rounded-lg mt-1 outline-none border-none shadow-inner">
             </div>
             <div class="flex gap-2">
-                <button onclick="toggleSection('history-section')" class="bg-blue-600 p-2.5 rounded-xl border border-blue-500 active:bg-blue-800">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <button onclick="toggleSection('history-section')" class="bg-blue-700 p-3 rounded-2xl border border-blue-600 shadow-md btn-active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </button>
-                <button onclick="toggleSection('summary-panel')" class="bg-blue-600 p-2.5 rounded-xl border border-blue-500 active:bg-blue-800">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <button onclick="toggleSection('summary-panel')" class="bg-blue-700 p-3 rounded-2xl border border-blue-600 shadow-md btn-active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </button>
             </div>
         </header>
 
-        <div class="content-scroll p-4 space-y-4">
+        <div class="content-scroll p-4 space-y-5">
             
-            <div id="summary-panel" class="hidden bg-slate-900 text-white p-5 rounded-3xl shadow-xl space-y-4 border border-slate-700">
-                <div class="grid grid-cols-2 gap-3 text-center">
-                    <div class="bg-slate-800 p-3 rounded-2xl">
-                        <p id="total-cash" class="text-green-400 font-black text-xl">$0</p>
-                        <p class="text-[9px] uppercase font-bold text-slate-500 tracking-tighter">Efectivo Total</p>
+            <div id="summary-panel" class="hidden bg-slate-900 text-white p-6 rounded-[2.5rem] shadow-2xl space-y-5 border border-slate-700">
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div class="bg-slate-800/50 p-4 rounded-3xl border border-slate-700">
+                        <p id="total-cash" class="text-green-400 font-black text-2xl">$0</p>
+                        <p class="text-[9px] uppercase font-bold text-slate-500">Efectivo</p>
                     </div>
-                    <div class="bg-slate-800 p-3 rounded-2xl">
-                        <p id="total-transfer" class="text-blue-400 font-black text-xl">$0</p>
-                        <p class="text-[9px] uppercase font-bold text-slate-500 tracking-tighter">Transf. Total</p>
+                    <div class="bg-slate-800/50 p-4 rounded-3xl border border-slate-700">
+                        <p id="total-transfer" class="text-blue-400 font-black text-2xl">$0</p>
+                        <p class="text-[9px] uppercase font-bold text-slate-500">Transf.</p>
                     </div>
                 </div>
                 <div class="text-center pt-2 border-t border-slate-800">
                     <p id="total-general" class="text-3xl font-black text-white">$0</p>
-                    <p class="text-[10px] uppercase text-blue-500 font-black mt-1 tracking-widest">Cierre de Caja</p>
+                    <p class="text-[10px] uppercase text-blue-500 font-black tracking-widest mt-1">Caja del Día</p>
                 </div>
             </div>
 
-            <div id="history-section" class="hidden bg-white p-5 rounded-3xl shadow-md space-y-4 border border-blue-100">
+            <div id="history-section" class="hidden bg-white p-6 rounded-[2.5rem] shadow-md space-y-5 border border-blue-50">
                 <div class="flex flex-col gap-3">
                     <div class="flex justify-between items-center">
-                        <h2 class="text-[11px] font-black text-slate-800 uppercase">Historial de Ventas</h2>
-                        <button onclick="exportToCSV()" class="bg-green-600 text-white text-[11px] px-4 py-2 rounded-xl font-black shadow-md uppercase">Excel Detallado</button>
+                        <h2 class="text-xs font-black text-slate-800 uppercase">Administración</h2>
+                        <button onclick="exportToCSV()" class="bg-green-600 text-white text-[10px] px-4 py-2.5 rounded-xl font-black shadow-lg uppercase btn-active">Exportar Excel</button>
                     </div>
-                    <p class="text-[9px] text-slate-400 italic font-medium">El reporte Excel separa automáticamente Efectivo y Transferencia.</p>
+                    <button onclick="backupSystem()" class="w-full bg-slate-800 text-white text-[10px] py-3 rounded-2xl font-black uppercase tracking-widest shadow-md btn-active">📦 Generar Backup Total (Resguardo)</button>
+                    <p class="text-[8px] text-slate-400 text-center font-bold uppercase italic">Recomendado hacerlo una vez por semana</p>
                 </div>
-                <div id="daily-history-list" class="space-y-2 max-h-60 overflow-y-auto pt-2"></div>
+                <div id="daily-history-list" class="space-y-2 max-h-60 overflow-y-auto pt-2 border-t border-slate-50"></div>
             </div>
 
-            <div class="bg-white p-5 rounded-[2rem] shadow-sm space-y-3 border border-slate-200" id="main-form">
-                <div class="flex justify-between items-center mb-1">
-                    <h2 id="form-title" class="text-[10px] font-black text-blue-800 uppercase tracking-widest italic">Cargar Nuevo Pedido</h2>
-                </div>
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm space-y-4 border border-slate-200" id="main-form">
                 <input type="hidden" id="editing-id" value="">
-                
-                <input type="text" id="address-input" placeholder="Dirección (Calle y N°)" class="w-full bg-slate-50 p-4 rounded-2xl text-sm font-bold outline-none border-2 border-transparent focus:border-blue-500 placeholder:text-slate-300">
+                <input type="text" id="address-input" placeholder="Dirección en Junín (Calle N°)" class="w-full bg-slate-50 p-4 rounded-2xl text-sm font-bold outline-none border-2 border-transparent focus:border-blue-600 transition-all placeholder:text-slate-300">
                 
                 <div class="flex gap-2">
-                    <input type="text" id="name-input" placeholder="Nombre" class="w-1/2 bg-slate-50 p-4 rounded-2xl text-sm outline-none font-medium">
-                    <input type="tel" id="phone-input" placeholder="WhatsApp" class="w-1/2 bg-slate-50 p-4 rounded-2xl text-sm outline-none font-medium">
+                    <input type="text" id="name-input" placeholder="Nombre" class="w-1/2 bg-slate-50 p-4 rounded-2xl text-sm outline-none font-bold">
+                    <input type="tel" id="phone-input" placeholder="WhatsApp" class="w-1/2 bg-slate-50 p-4 rounded-2xl text-sm outline-none font-bold">
                 </div>
 
-                <div class="grid grid-cols-3 gap-2 bg-blue-50/30 p-3 rounded-2xl border border-blue-50">
-                    <div class="text-center"><label class="block text-[8px] font-black text-slate-400">YOGUR</label><input type="number" id="qty-yogur" value="0" class="w-full bg-transparent text-center font-black text-lg"></div>
-                    <div class="text-center border-x border-slate-200"><label class="block text-[8px] font-black text-slate-400">GRANOLA</label><input type="number" id="qty-granola" value="0" class="w-full bg-transparent text-center font-black text-lg"></div>
-                    <div class="text-center"><label class="block text-[8px] font-black text-blue-600">PRECIO $</label><input type="number" id="total-amount" placeholder="0" class="w-full bg-transparent text-center font-black text-lg text-blue-700"></div>
+                <div class="grid grid-cols-3 gap-3 bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
+                    <div class="text-center"><label class="block text-[9px] font-black text-slate-400">YOGUR</label><input type="number" id="qty-yogur" value="0" class="w-full bg-transparent text-center font-black text-lg"></div>
+                    <div class="text-center border-x border-blue-100"><label class="block text-[9px] font-black text-slate-400">GRANOLA</label><input type="number" id="qty-granola" value="0" class="w-full bg-transparent text-center font-black text-lg"></div>
+                    <div class="text-center"><label class="block text-[9px] font-black text-blue-600">PRECIO $</label><input type="number" id="total-amount" placeholder="0" class="w-full bg-transparent text-center font-black text-lg text-blue-700"></div>
                 </div>
 
-                <div class="flex gap-2 pt-1">
-                    <button id="btn-cancel-edit" onclick="resetInputs()" class="hidden flex-1 bg-slate-200 text-slate-500 py-4 rounded-2xl font-black text-xs uppercase">X</button>
-                    <button id="btn-add" onclick="searchAndAdd()" class="flex-[3] bg-blue-700 text-white py-4 rounded-2xl font-black shadow-lg text-sm uppercase tracking-widest">Guardar Pedido</button>
+                <div class="flex gap-2 pt-2">
+                    <button id="btn-cancel-edit" onclick="resetInputs()" class="hidden flex-1 bg-red-100 text-red-600 py-4 rounded-2xl font-black text-xs uppercase btn-active">X</button>
+                    <button id="btn-add" onclick="searchAndAdd()" class="flex-[3] bg-blue-800 text-white py-4 rounded-2xl font-black shadow-xl text-sm uppercase tracking-widest btn-active">Guardar Pedido</button>
                 </div>
             </div>
 
             <div id="map"></div>
 
-            <button onclick="openInGoogleMaps()" id="gps-button" class="hidden w-full bg-slate-900 text-white py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 shadow-2xl active:scale-95 transition-transform">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-                ABRIR MAPA DE RUTA
+            <button onclick="openInGoogleMaps()" id="gps-button" class="hidden w-full bg-slate-900 text-white py-6 rounded-[2.5rem] font-black flex items-center justify-center gap-4 shadow-2xl btn-active">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                INICIAR RUTA GPS
             </button>
 
             <div class="space-y-4">
                 <div class="flex justify-between items-center px-1">
-                    <h2 class="font-black text-slate-800 text-[11px] uppercase tracking-tighter">Entregas Pendientes</h2>
-                    <button onclick="optimizeRoute()" class="text-[10px] bg-white text-blue-700 px-4 py-2 rounded-xl font-black uppercase border-2 border-blue-700 shadow-sm">Optimizar Ruta</button>
+                    <h2 class="font-black text-slate-800 text-[11px] uppercase tracking-tighter">Hoja de Ruta</h2>
+                    <button onclick="optimizeRoute()" class="text-[10px] bg-white text-blue-800 px-5 py-2.5 rounded-full font-black uppercase border-2 border-blue-800 shadow-md btn-active">Optimizar</button>
                 </div>
                 <ul id="pending-list" class="space-y-4"></ul>
-                
-                <div id="completed-section" class="hidden pt-8 border-t-2 border-dashed border-slate-300">
-                    <h2 class="font-black text-slate-400 text-[10px] uppercase mb-4 text-center tracking-[0.2em]">Caja Cerrada del Día</h2>
-                    <ul id="completed-list" class="space-y-2 opacity-70"></ul>
+                <div id="completed-section" class="hidden pt-10 border-t-4 border-slate-200 border-dotted">
+                    <ul id="completed-list" class="space-y-2 opacity-60"></ul>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        const STORAGE_KEY_PENDING = 'yg_junin_stops_v17';
+        const STORAGE_KEY_DONE = 'yg_junin_completed_v17';
         const CITY_SUFFIX = ", Junín, Buenos Aires, Argentina";
+        
         let map, routeLine;
         let selectedOrderId = null;
-        
-        let stops = JSON.parse(localStorage.getItem('stops_v16')) || [];
-        let completed = JSON.parse(localStorage.getItem('completed_v16')) || [];
+        let stops = JSON.parse(localStorage.getItem(STORAGE_KEY_PENDING)) || [];
+        let completed = JSON.parse(localStorage.getItem(STORAGE_KEY_DONE)) || [];
 
         window.onload = function() {
             const hoy = new Date().toISOString().split('T')[0];
@@ -142,13 +139,30 @@
             renderAll(); renderHistory();
         };
 
+        // --- SEGURIDAD Y BACKUP ---
+        function backupSystem() {
+            const backupData = {
+                fecha_backup: new Date().toLocaleString(),
+                pedidos_pendientes: stops,
+                historial_completado: completed
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "BACKUP_YOGUR_JUNIN_" + new Date().toISOString().split('T')[0] + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            alert("Resguardo generado con éxito. Guardá este archivo bien.");
+        }
+
         async function searchAndAdd() {
             const addr = document.getElementById('address-input').value;
             const date = document.getElementById('view-date').value;
             const editId = document.getElementById('editing-id').value;
             const btn = document.getElementById('btn-add');
 
-            if (!addr) return alert("Falta la dirección");
+            if (!addr) return;
             btn.disabled = true; btn.innerText = "LOCALIZANDO...";
 
             try {
@@ -160,7 +174,7 @@
                     const orderData = {
                         id: editId ? parseInt(editId) : Date.now(),
                         latlng, addr,
-                        name: document.getElementById('name-input').value || 'S/N',
+                        name: document.getElementById('name-input').value || 'Cliente',
                         phone: document.getElementById('phone-input').value || '',
                         yogur: parseInt(document.getElementById('qty-yogur').value) || 0,
                         granola: parseInt(document.getElementById('qty-granola').value) || 0,
@@ -170,12 +184,12 @@
 
                     if (editId) {
                         const idx = stops.findIndex(s => s.id === parseInt(editId));
-                        stops[idx] = orderData;
+                        if(idx !== -1) stops[idx] = orderData;
                     } else { stops.push(orderData); }
                     
                     save(); renderAll(); resetInputs();
-                } else { alert("No encontramos la dirección en Junín. Revisá la altura."); }
-            } catch (e) { alert("Error de red. Verificá tu conexión."); }
+                } else { alert("Dirección no encontrada. Revisá la calle."); }
+            } catch (e) { alert("Error de conexión."); }
             finally { btn.disabled = false; btn.innerText = "GUARDAR PEDIDO"; }
         }
 
@@ -189,14 +203,13 @@
             document.getElementById('qty-yogur').value = order.yogur;
             document.getElementById('qty-granola').value = order.granola;
             document.getElementById('total-amount').value = order.amount;
-            document.getElementById('form-title').innerText = "Editando pedido cargado";
             document.getElementById('btn-add').innerText = "ACTUALIZAR";
             document.getElementById('btn-cancel-edit').classList.remove('hidden');
             document.getElementById('main-form').scrollIntoView({behavior: "smooth"});
         }
 
         function deleteOrder(id) {
-            if(confirm("¿Seguro que querés eliminar este pedido? No se puede deshacer.")) {
+            if(confirm("¿Eliminar este pedido?")) {
                 stops = stops.filter(s => s.id !== id);
                 save(); renderAll();
             }
@@ -205,7 +218,7 @@
         function openDeliverModal(id) {
             selectedOrderId = id;
             const order = stops.find(s => s.id === id);
-            document.getElementById('modal-client-name').innerText = order.name + " - $" + order.amount;
+            document.getElementById('modal-client-name').innerText = order.name;
             document.getElementById('payment-modal').style.display = 'flex';
         }
 
@@ -229,7 +242,6 @@
 
             const visible = stops.filter(s => s.date === currentDay);
             const done = completed.filter(s => s.date === currentDay);
-
             visible.forEach(s => L.marker(s.latlng).addTo(map));
 
             const pList = document.getElementById('pending-list');
@@ -242,25 +254,21 @@
 
             visible.forEach(s => {
                 const li = document.createElement('li');
-                li.className = "bg-white p-5 rounded-3xl shadow-sm border border-slate-100 space-y-4";
+                li.className = "bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-300";
                 li.innerHTML = `
                     <div class="flex justify-between items-start">
-                        <div class="overflow-hidden">
-                            <p class="text-xs font-black text-slate-800 uppercase truncate">${s.name}</p>
-                            <p class="text-[10px] text-slate-500 truncate font-bold">${s.addr}</p>
+                        <div>
+                            <p class="text-[11px] font-black text-slate-800 uppercase">${s.name}</p>
+                            <p class="text-[9px] text-slate-400 font-bold">${s.addr}</p>
                         </div>
-                        <div class="flex gap-1">
-                            <button onclick="editOrder(${s.id})" class="p-2 bg-blue-50 text-blue-600 rounded-xl">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                            </button>
-                            <button onclick="deleteOrder(${s.id})" class="p-2 bg-red-50 text-red-600 rounded-xl">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                            </button>
+                        <div class="flex gap-2">
+                            <button onclick="editOrder(${s.id})" class="p-2.5 bg-blue-50 text-blue-600 rounded-2xl btn-active"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                            <button onclick="deleteOrder(${s.id})" class="p-2.5 bg-red-50 text-red-600 rounded-2xl btn-active"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-50">
-                        <span class="text-[11px] font-black text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100">$${s.amount} • 🥛${s.yogur} 🌾${s.granola}</span>
-                        <button onclick="openDeliverModal(${s.id})" class="bg-blue-700 text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase shadow-lg active:bg-green-600 transition-colors">Entregar</button>
+                        <span class="text-[10px] font-black text-blue-800 bg-blue-50 px-4 py-2 rounded-full">$${s.amount} • 🥛${s.yogur} 🌾${s.granola}</span>
+                        <button onclick="openDeliverModal(${s.id})" class="bg-blue-800 text-white px-8 py-3.5 rounded-[1.5rem] text-[10px] font-black uppercase shadow-lg btn-active">Entregar</button>
                     </div>
                 `;
                 pList.appendChild(li);
@@ -268,8 +276,8 @@
 
             done.forEach(s => {
                 const li = document.createElement('li');
-                li.className = "flex justify-between text-[10px] bg-white p-3 rounded-xl border border-slate-200 text-slate-400 font-bold mb-2";
-                li.innerHTML = `<span>${s.name} - $${s.amount} (${s.method === 'efectivo' ? 'EF' : 'TR'})</span> <span class="text-green-500 font-black">ENTREGADO</span>`;
+                li.className = "flex justify-between text-[9px] bg-white p-3 rounded-2xl border border-slate-200 text-slate-400 font-black mb-2";
+                li.innerHTML = `<span>${s.name} - $${s.amount} (${s.method === 'efectivo' ? 'EF' : 'TR'})</span> <span>✓</span>`;
                 cList.appendChild(li);
                 if(s.method === 'efectivo') cash += s.amount; else trans += s.amount;
             });
@@ -281,7 +289,7 @@
             if (visible.length > 0) {
                 document.getElementById('gps-button').classList.remove('hidden');
                 const pts = visible.map(s => [s.latlng.lat, s.latlng.lng]);
-                routeLine = L.polyline(pts, {color: '#1d4ed8', weight: 3, dashArray: '8, 12'}).addTo(map);
+                routeLine = L.polyline(pts, {color: '#1e40af', weight: 4, dashArray: '10, 15'}).addTo(map);
             } else { document.getElementById('gps-button').classList.add('hidden'); }
         }
 
@@ -299,42 +307,34 @@
             Object.keys(totals).sort().reverse().forEach(date => {
                 const data = totals[date];
                 const item = document.createElement('div');
-                item.className = "bg-white p-4 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm";
+                item.className = "bg-slate-50 p-4 rounded-3xl border border-slate-200 flex justify-between items-center";
                 item.innerHTML = `
-                    <div><p class="text-[10px] font-black text-slate-800 uppercase tracking-tighter">${date}</p>
-                    <p class="text-[9px] text-slate-500 font-bold">Ef: $${data.cash} | Tr: $${data.trans}</p></div>
-                    <p class="text-base font-black text-blue-700">$${data.total}</p>
+                    <div><p class="text-[10px] font-black text-slate-800 uppercase">${date}</p>
+                    <p class="text-[8px] text-slate-500 font-bold uppercase">Ef: $${data.cash} | Tr: $${data.trans}</p></div>
+                    <p class="text-sm font-black text-blue-800">$${data.total}</p>
                 `;
                 historyList.appendChild(item);
             });
         }
 
         function exportToCSV() {
-            if (completed.length === 0) return alert("No hay datos para exportar.");
-            
-            // BOM para que Excel detecte los acentos y símbolos correctamente
-            let csv = "\uFEFF";
-            csv += "Fecha,Cliente,Dirección,Yogur,Granola,Monto Efectivo,Monto Transferencia,Total Cobrado\n";
-            
+            if (completed.length === 0) return alert("No hay datos");
+            let csv = "\uFEFFFecha,Cliente,Direccion,Yogur,Granola,Efectivo,Transferencia,Total\n";
             completed.forEach(s => {
-                const cashVal = s.method === 'efectivo' ? s.amount : 0;
-                const transVal = s.method === 'transferencia' ? s.amount : 0;
-                csv += `${s.date},${s.name},${s.addr.replace(',', '.')},${s.yogur},${s.granola},${cashVal},${transVal},${s.amount}\n`;
+                const c = s.method === 'efectivo' ? s.amount : 0;
+                const t = s.method === 'transferencia' ? s.amount : 0;
+                csv += `${s.date},${s.name},${s.addr.replace(',', '.')},${s.yogur},${s.granola},${c},${t},${s.amount}\n`;
             });
-
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Ventas_Yogur_Junin_${new Date().toLocaleDateString()}.csv`);
-            document.body.appendChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = `Cierre_Caja_Junin.csv`;
             link.click();
-            document.body.removeChild(link);
         }
 
         function save() {
-            localStorage.setItem('stops_v16', JSON.stringify(stops));
-            localStorage.setItem('completed_v16', JSON.stringify(completed));
+            localStorage.setItem(STORAGE_KEY_PENDING, JSON.stringify(stops));
+            localStorage.setItem(STORAGE_KEY_DONE, JSON.stringify(completed));
         }
 
         function resetInputs() {
@@ -345,7 +345,6 @@
             document.getElementById('qty-yogur').value = 0;
             document.getElementById('qty-granola').value = 0;
             document.getElementById('total-amount').value = "";
-            document.getElementById('form-title').innerText = "Cargar Nuevo Pedido";
             document.getElementById('btn-add').innerText = "GUARDAR PEDIDO";
             document.getElementById('btn-cancel-edit').classList.add('hidden');
         }
