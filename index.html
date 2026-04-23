@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Logística y Contabilidad - Yogur Griego Junín</title>
+    <title>Yogur Griego Junín - Logística V10</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1d4ed8">
@@ -17,7 +17,7 @@
     
     <style>
         body { -webkit-tap-highlight-color: transparent; font-family: system-ui, sans-serif; }
-        #map { height: 20vh; width: 100%; border-radius: 1.5rem; z-index: 1; }
+        #map { height: 20vh; width: 100%; border-radius: 1.5rem; z-index: 1; margin-bottom: 10px; }
         .app-container { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         .content-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -30,11 +30,11 @@
         <header class="bg-blue-800 text-white p-4 pt-6 shadow-lg shrink-0">
             <div class="max-w-xl mx-auto flex justify-between items-center">
                 <div>
-                    <h1 class="text-lg font-bold">Gestión de Ventas</h1>
-                    <input type="date" id="view-date" onchange="renderAll()" class="bg-blue-700 text-[10px] font-bold uppercase p-1 rounded border-none text-white outline-none">
+                    <h1 class="text-lg font-bold leading-none mb-1">Hoja de Ruta</h1>
+                    <input type="date" id="view-date" onchange="renderAll()" class="bg-blue-700 text-[11px] font-bold uppercase p-1.5 rounded border-none text-white outline-none">
                 </div>
-                <button onclick="toggleSummary()" class="bg-blue-600 p-2 rounded-lg shadow-inner active:scale-90">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <button onclick="toggleSummary()" class="bg-blue-600 p-2.5 rounded-xl shadow-inner active:scale-90">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </button>
             </div>
         </header>
@@ -42,7 +42,7 @@
         <div class="content-scroll">
             <div class="max-w-xl mx-auto p-4 space-y-4 pb-28">
                 
-                <div id="summary-panel" class="hidden bg-slate-900 text-white p-5 rounded-3xl animate-fade-in space-y-4">
+                <div id="summary-panel" class="hidden bg-slate-900 text-white p-5 rounded-3xl animate-fade-in space-y-4 border border-slate-700">
                     <div class="grid grid-cols-2 gap-3 text-center">
                         <div class="bg-slate-800 p-3 rounded-2xl border border-slate-700">
                             <p id="total-cash" class="text-xl font-black text-green-400">$0</p>
@@ -53,13 +53,13 @@
                             <p class="text-[9px] opacity-60 uppercase font-bold">Transferencia</p>
                         </div>
                     </div>
-                    <div class="bg-blue-900/30 p-3 rounded-2xl border border-blue-500/30 text-center">
+                    <div class="bg-blue-900/40 p-4 rounded-2xl border border-blue-500/30 text-center">
                         <p id="total-general" class="text-2xl font-black text-white">$0</p>
-                        <p class="text-[10px] opacity-60 uppercase font-bold">Total Recaudado Hoy</p>
+                        <p class="text-[10px] opacity-60 uppercase font-bold tracking-wider">Recaudación Total</p>
                     </div>
-                    <div class="flex justify-around border-t border-slate-700 pt-3 text-[10px] font-bold uppercase">
-                        <div>🥛 <span id="total-yogur">0</span></div>
-                        <div>🌾 <span id="total-granola">0</span></div>
+                    <div class="flex justify-around border-t border-slate-700 pt-3 text-[10px] font-bold uppercase text-slate-400">
+                        <div>Yogures: <span id="total-yogur-sum" class="text-white">0</span></div>
+                        <div>Granola: <span id="total-granola-sum" class="text-white">0</span></div>
                     </div>
                 </div>
 
@@ -68,7 +68,7 @@
                         <div class="flex gap-2">
                             <input type="date" id="input-date" class="w-1/3 px-2 py-3 bg-slate-100 rounded-xl text-xs font-bold outline-none border-2 border-transparent focus:border-blue-500">
                             <input type="text" id="address-input" list="client-suggestions" placeholder="Dirección" 
-                                   class="w-2/3 px-4 py-3 bg-slate-100 rounded-xl text-sm outline-none" oninput="checkDirectory(this.value)">
+                                   class="w-2/3 px-4 py-3 bg-slate-100 rounded-xl text-sm outline-none border-2 border-transparent focus:border-blue-500" oninput="checkDirectory(this.value)">
                         </div>
                         <datalist id="client-suggestions"></datalist>
                         
@@ -77,7 +77,7 @@
                             <input type="tel" id="phone-input" placeholder="WhatsApp" class="w-1/2 px-4 py-3 bg-slate-100 rounded-xl text-sm outline-none">
                         </div>
 
-                        <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2 rounded-2xl">
+                        <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
                             <div class="text-center">
                                 <label class="text-[8px] font-bold text-slate-400 uppercase">Yogur</label>
                                 <input type="number" id="qty-yogur" value="0" class="w-full bg-transparent font-bold text-center outline-none">
@@ -87,15 +87,15 @@
                                 <input type="number" id="qty-granola" value="0" class="w-full bg-transparent font-bold text-center outline-none">
                             </div>
                             <div class="text-center">
-                                <label class="text-[8px] font-bold text-blue-600 uppercase">Monto $</label>
+                                <label class="text-[8px] font-bold text-blue-600 uppercase">Total $</label>
                                 <input type="number" id="total-amount" placeholder="0" class="w-full bg-transparent font-bold text-center text-blue-600 outline-none">
                             </div>
                         </div>
 
                         <div class="flex gap-2">
-                            <select id="payment-method" class="w-full px-4 py-3 bg-slate-100 rounded-xl text-xs font-bold outline-none border-2 border-transparent focus:border-blue-500 appearance-none">
-                                <option value="efectivo">EFECTIVO 💵</option>
-                                <option value="transferencia">TRANSFERENCIA 📱</option>
+                            <select id="payment-method" class="w-full px-4 py-3 bg-slate-100 rounded-xl text-xs font-bold outline-none border-2 border-transparent focus:border-blue-500">
+                                <option value="efectivo">Paga en Efectivo 💵</option>
+                                <option value="transferencia">Paga por Transferencia 📱</option>
                             </select>
                         </div>
                     </div>
@@ -105,27 +105,27 @@
                     </button>
                     
                     <div class="flex gap-2">
-                        <button onclick="setSearchAsOrigin()" class="flex-1 bg-slate-100 text-slate-500 py-2 rounded-lg text-[10px] font-bold uppercase">Inicio</button>
-                        <button onclick="optimizeRoute()" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[10px] font-bold uppercase shadow-md">Optimizar Ruta</button>
+                        <button onclick="setSearchAsOrigin()" class="flex-1 bg-slate-100 text-slate-500 py-2 rounded-lg text-[10px] font-bold uppercase">Punto Inicio</button>
+                        <button onclick="optimizeRoute()" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[10px] font-bold uppercase shadow-md">Optimizar</button>
                     </div>
                 </div>
 
                 <div id="map" class="shadow-md border-4 border-white"></div>
 
-                <button onclick="openInGoogleMaps()" id="gps-button" class="hidden w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl flex items-center justify-center gap-3 active:scale-95">
-                    ABRIR RUTA EN GOOGLE MAPS
+                <button onclick="openInGoogleMaps()" id="gps-button" class="hidden w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl flex items-center justify-center gap-3 active:bg-black transition-colors">
+                    ABRIR RECORRIDO EN GPS
                 </button>
 
                 <div class="space-y-3">
                     <div class="flex justify-between items-center px-2">
-                        <h2 class="font-bold text-slate-800 text-sm uppercase">Pendientes (<span id="count-pending">0</span>)</h2>
+                        <h2 class="font-bold text-slate-800 text-[11px] uppercase tracking-wider">Pendientes (<span id="count-pending">0</span>)</h2>
                         <button onclick="clearEverything()" class="text-[10px] text-red-500 font-bold uppercase">Borrar Día</button>
                     </div>
                     <ul id="pending-list" class="space-y-3"></ul>
                 </div>
 
                 <div id="completed-section" class="hidden space-y-3 pt-4 border-t border-slate-200">
-                    <h2 class="font-bold text-slate-400 text-sm uppercase px-2">Entregas Finalizadas</h2>
+                    <h2 class="font-bold text-slate-400 text-[11px] uppercase px-2">Entregas Finalizadas</h2>
                     <ul id="completed-list" class="space-y-2"></ul>
                 </div>
             </div>
@@ -136,17 +136,21 @@
         const CITY_SUFFIX = ", Junín, Buenos Aires, Argentina";
         let map, originMarker, routeLine;
         
-        let stops = JSON.parse(localStorage.getItem('stops_v9')) || [];
-        let completed = JSON.parse(localStorage.getItem('completed_v9')) || [];
-        let directory = JSON.parse(localStorage.getItem('directory_v9')) || {};
-        let origin = JSON.parse(localStorage.getItem('origin_v9')) || null;
+        let stops = JSON.parse(localStorage.getItem('stops_v10')) || [];
+        let completed = JSON.parse(localStorage.getItem('completed_v10')) || [];
+        let directory = JSON.parse(localStorage.getItem('directory_v10')) || {};
+        let origin = JSON.parse(localStorage.getItem('origin_v10')) || null;
 
         function initMap() {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('view-date').value = hoy;
             document.getElementById('input-date').value = hoy;
-            map = L.map('map', { zoomControl: false }).setView([-34.585, -60.948], 14);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+            if (!map) {
+                map = L.map('map', { zoomControl: false }).setView([-34.585, -60.948], 14);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+            }
+            
             updateDirectoryUI();
             renderAll();
         }
@@ -173,16 +177,18 @@
             const addr = document.getElementById('address-input').value;
             const date = document.getElementById('input-date').value;
             if (!addr) return;
-            btn.disabled = true; btn.innerText = "VERIFICANDO...";
+
+            btn.disabled = true; btn.innerText = "BUSCANDO...";
 
             try {
                 const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr + CITY_SUFFIX)}&limit=1`);
                 const data = await res.json();
                 if (data && data.length > 0) {
                     const latlng = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                    
                     if (asOrigin) {
                         origin = latlng;
-                        localStorage.setItem('origin_v9', JSON.stringify(origin));
+                        localStorage.setItem('origin_v10', JSON.stringify(origin));
                     } else {
                         const name = document.getElementById('name-input').value;
                         const phone = document.getElementById('phone-input').value;
@@ -192,16 +198,13 @@
                         const method = document.getElementById('payment-method').value;
 
                         directory[addr] = { name, phone };
-                        localStorage.setItem('directory_v9', JSON.stringify(directory));
+                        localStorage.setItem('directory_v10', JSON.stringify(directory));
                         
-                        stops.push({ 
-                            id: Date.now(), latlng, addr, name, phone, 
-                            yogur: y, granola: g, amount, method, date 
-                        });
+                        stops.push({ id: Date.now(), latlng, addr, name, phone, yogur: y, granola: g, amount, method, date });
                         saveStops();
                     }
                     renderAll(); resetInputs(); updateDirectoryUI();
-                } else { alert("Dirección no encontrada."); }
+                } else { alert("No se encontró la dirección. Intenta con calle y número."); }
             } catch (e) { console.error(e); }
             finally { btn.disabled = false; btn.innerText = "GUARDAR PEDIDO"; }
         }
@@ -210,41 +213,4 @@
             const currentViewDate = document.getElementById('view-date').value;
             if (originMarker) map.removeLayer(originMarker);
             if (routeLine) map.removeLayer(routeLine);
-            map.eachLayer(l => { if(l instanceof L.Marker) map.removeLayer(l); });
-            
-            if (origin) {
-                const icon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', iconSize: [25, 41], iconAnchor: [12, 41] });
-                originMarker = L.marker(origin, {icon}).addTo(map);
-            }
-
-            const visibleStops = stops.filter(s => s.date === currentViewDate);
-            const visibleCompleted = completed.filter(s => s.date === currentViewDate);
-
-            visibleStops.forEach(s => L.marker(s.latlng).addTo(map));
-
-            const pList = document.getElementById('pending-list');
-            const cList = document.getElementById('completed-list');
-            pList.innerHTML = ''; cList.innerHTML = '';
-
-            document.getElementById('count-pending').innerText = visibleStops.length;
-            document.getElementById('completed-section').classList.toggle('hidden', visibleCompleted.length === 0);
-
-            // Contabilidad
-            let cash = 0, transfer = 0, ty = 0, tg = 0;
-
-            // Renderizar Pendientes
-            visibleStops.forEach(s => {
-                const li = document.createElement('li');
-                li.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-100 animate-fade-in";
-                li.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div class="overflow-hidden">
-                            <p class="text-[11px] font-black uppercase text-blue-800 truncate">${s.name || 'S/N'}</p>
-                            <p class="text-[9px] text-slate-500 truncate">${s.addr}</p>
-                            <div class="flex gap-2 mt-1">
-                                <span class="text-[10px] font-bold text-green-600">$${s.amount}</span>
-                                <span class="text-[10px] text-slate-400 uppercase font-bold">${s.method === 'efectivo' ? '💵' : '📱'}</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="sendWhatsApp('${s.phone}', '${s.name}', '${s.addr}')" class="p-2 bg-green-100 text-green-700 rounded-lg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84
+            map.each
